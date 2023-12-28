@@ -74,17 +74,17 @@ const ChatSection = ({ history, setHistory }) => {
   return (
     <div id='chat-area' className={`relative h-[85%] w-full m-auto pb-28 pt-14 overflow-y-auto flex flex-col items-center chat-scrollbar ${history && 'invisible md:visible'}`}>
       
-      <nav className={`flex fixed inset-0 mt-4 ml-4 items-start gap-10 h-10 w-full ${history && 'invisible'}`}>
         <Menu 
           onClick={()=>setHistory(true)}
-          className={`cursor-pointer `}
+          className={`cursor-pointer fixed inset-0 mt-4 ml-4 items-start gap-10 hover:opacity-40 ${history && 'invisible'}`}
           size='20'
         />
-      </nav>
+
           {messages.map((message, index) => (
             <Message key={index} {...message} />
           ))}
-          <div id='dummy-div' />
+
+        <div id='dummy-div' />
         <div className="fixed bottom-4 flex flex-col h-[15%] justify-center items-center bg-gray-700 w-[60%]">
             <div
               id='input-div'
@@ -125,7 +125,7 @@ const ChatSection = ({ history, setHistory }) => {
           </p>
       </div>
       <ChevronLeft 
-        className={`fixed left-[260px] top-12 cursor-pointer ${history ? 'visible': 'invisible'}`}
+        className={`fixed left-[260px] hover:opacity-50 top-4 cursor-pointer ${history ? 'visible': 'invisible'}`}
         onClick={()=>setHistory(false)}
         size='20'
         color='gray'

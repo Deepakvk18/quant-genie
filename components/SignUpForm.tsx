@@ -106,9 +106,9 @@ const SignUpForm = () => {
             </div>
         </form>
         <div className="w-full text-xs my-2 font-didact_gothic text-left">
-                Go to homepage
-                    <Link className="hover:underline text-blue-700 dark:text-blue-300" href="/"> QuantGenie</Link>
-                </div>
+            Go to homepage
+            <Link className="hover:underline text-blue-700 dark:text-blue-300" href="/"> QuantGenie</Link>
+        </div>
             
         </Form>
     </div>
