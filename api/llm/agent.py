@@ -58,4 +58,5 @@ agent_executor = AgentExecutor(
                     memory=memory, 
                     max_iterations=5,
                     early_stopping_method="generate",
-                    return_intermediate_steps=False)
+                    return_intermediate_steps=False,
+                    handle_parsing_errors=True)

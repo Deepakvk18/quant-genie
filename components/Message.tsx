@@ -2,7 +2,7 @@ import Avatar from "react-avatar";
 
 const Message = ({ sender, text }) => (
     <div 
-      className={`flex flex-col message rounded-md ${sender === 'Genie' ? 'bg-gray-600' : 'Genie-message'} w-[50%] my-2 py-2 px-2`}
+      className={`flex flex-col message rounded-xl ${sender === 'Genie' ? 'bg-gray-600' : 'Genie-message'} w-[50%] my-2 p-4`}
     >
   
       <div className='flex w-full items-center'>

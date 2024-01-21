@@ -3,10 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 import Message from './Message';
-import { ChevronLeft, Menu, Download, Share2 } from 'lucide-react';
+import { ChevronLeft, Menu } from 'lucide-react';
+import { io } from 'socket.io-client';
+import { Socket } from 'socket.io-client/debug';
 
 
 const ChatSection = ({ history, setHistory }) => {
+  
   const [messages, setMessages] = useState([
     { sender: 'user', text: 'Hello!' },
     { sender: 'Genie', text: 'Hi there!' },
@@ -25,13 +28,66 @@ const ChatSection = ({ history, setHistory }) => {
     // Add more messages as needed
   ]);
 
+  const [socket, setSocket] = useState<any>(null)
+  const [historyData, setHistoryData] = useState([])
+
+  
+
   const scrollToBottom = ()=>{
     const chatArea = document.getElementById('dummy-div')
     chatArea?.scrollIntoView({ behavior: 'smooth' })
   }
   
   useEffect(()=>{
+    const socket = io('ws://127.0.0.1:8000', {
+      path: '/socket',
+      autoConnect: false,
+      transports: ['websocket'],
+      upgrade: false
+    })
+    setSocket(socket)
+    
+
+    socket.on("connect", ()=>{
+      console.log("Connected!!", socket.id);
+    })
+  
+    socket.on("response", ()=>{
+      console.log("Response", socket.id);
+    })
+  
+    socket.on("message", (data)=>{
+
+      const jsonData = JSON.parse(data)
+      console.log("Inside on message", historyData);
+      
+      console.log(jsonData, typeof jsonData, data?.jsonData);
+      setMessages((prevMessages)=>[...prevMessages, {sender: 'Genie', text:jsonData?.output}]);
+      setHistoryData(jsonData?.chat_history)  
+      scrollToBottom()
+      setLoading(false)
+    })
+
+    socket.on("connect_error", (err)=>{
+      console.error(`Error due to ${err.message}`);
+    })
+  
+    socket.on("disconnect", ()=>{
+      console.log("Disconnect");
+      socket.removeAllListeners();  
+      
+    })
     scrollToBottom()
+    socket.connect()
+
+    return ()=>{
+      socket.off('message')
+      socket.off('connect')
+      socket.off('disconnect')
+      socket.off('response')
+      socket.disconnect()
+      socket.removeAllListeners()
+    }
   }, [])
 
   const [loading, setLoading] = useState(false)
@@ -46,30 +102,23 @@ const ChatSection = ({ history, setHistory }) => {
         this.style.height = 'auto';
         this.style.height = this.scrollHeight + 'px';    
         this.style.maxHeight = 300 + 'px'
-        this.style.minHeight = 100 + 'px'
+        this.style.minHeight = 50 + 'px'
       }
     textarea?.addEventListener('input', autoResize, false);
   }, [])
-  
 
 
   const [message, setMessage] = useState('')
 
   const handleSendMessage = (text) => {
     setLoading(true)
-    const newMessage = { sender: 'user', text };
+    const newMessage = { sender: 'user', text: text };
+    socket.emit('message', {input: text, chat_history: historyData})
     setMessages((prevMessages)=>[...prevMessages, newMessage]);
     scrollToBottom()
-    // Simulate response after a delay (for demo purposes)
-    // const intArray = 
-    setTimeout(() => {
-      const responseMessage = { sender: 'Genie', text: 'I am good, thank you!' };
-      setMessages((prevMessages)=>[...prevMessages, responseMessage]);
-      scrollToBottom()
-      setLoading(false)  
-    }, 3000);
-    
   };
+
+  
 
   return (
     <div id='chat-area' className={`relative h-[85%] w-full m-auto pb-28 pt-14 overflow-y-auto flex flex-col items-center chat-scrollbar ${history && 'invisible md:visible'}`}>
@@ -86,6 +135,7 @@ const ChatSection = ({ history, setHistory }) => {
 
         <div id='dummy-div' />
         <div className="fixed bottom-4 flex flex-col h-[15%] justify-center items-center bg-gray-700 w-[60%]">
+          
             <div
               id='input-div'
               className='relative w-full'>
@@ -113,10 +163,12 @@ const ChatSection = ({ history, setHistory }) => {
                   }} 
                   className={`text-gray-400 cursor-text w-full h-full ${loading && 'text-center items-center'}`}>{`${loading ?  "Loading..." : (!message ? "Type your query...": '')}`}</p>
               </label>
-              <div className={`absolute right-5 top-5 rounded-md cursor-pointer hover:opacity-80 bg-white ${message === '' && 'opacity-30'} ${loading && 'invisible'}`}>
-                <ArrowUp 
-                  color='black'
-                />
+              <div>
+                <button disabled={message === ""} className={`absolute right-5 top-5 rounded-md cursor-pointer hover:opacity-80 bg-white disabled:opacity-30 ${loading && 'invisible'}`} type='submit' onClick={handleSendMessage}>
+                  <ArrowUp 
+                    color='black'
+                  />
+                </button>
               </div>
             </div>
           
@@ -130,6 +182,7 @@ const ChatSection = ({ history, setHistory }) => {
         size='20'
         color='gray'
       />
+      
     </div>
   );
 };
