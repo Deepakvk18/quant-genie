@@ -27,6 +27,12 @@ class ChatRepo:
         if not chat:
             raise QuantGenieException('Chat not found')
         return chat
+    
+    def get_chats(self, user_id: str):
+        chats = self.db.find({ 'user_id': user_id })
+        if not chats:
+            raise QuantGenieException('No Chat history found')
+        return chats
 
 
 

@@ -11,3 +11,4 @@ class ChatModel(BaseModel):
     user_id: str
     title: str
     messages: List[Message]
+    chat_history: str

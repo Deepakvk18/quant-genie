@@ -19,4 +19,8 @@ class UserPatch(BaseModel):
 
 class LoginResponse(BaseModel):
     access_token: str
+    refresh_token: str
     user: UserModel
+
+class RefreshReq(BaseModel):
+    refresh_token: str

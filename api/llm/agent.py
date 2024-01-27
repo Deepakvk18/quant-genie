@@ -1,6 +1,4 @@
 # LLM
-import os
-from fastapi import WebSocket
 from langchain.chat_models import ChatOpenAI
 from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder

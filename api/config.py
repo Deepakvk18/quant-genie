@@ -15,5 +15,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ACCESS_EXPIRY: int
     REFRESH_EXPIRY: int
+    GCP_BUCKET_ID: str
+    GCP_PROJECT_ID: str
     
     model_config = SettingsConfigDict(env_file=".env")

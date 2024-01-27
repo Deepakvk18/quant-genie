@@ -11,9 +11,10 @@ from llm.agent import agent_executor
 from langchain.load import dumps, loads
 from database.messages import ChatRepo
 from exceptions import QuantGenieException
+import uvicorn
 
 app = FastAPI()
-sio = SocketManager(app, mount_location="/", socketio_path="socket", cors_allowed_origins=[])
+sio = SocketManager(app, cors_allowed_origins=[])
 
 app.add_middleware(
         CORSMiddleware,
@@ -28,6 +29,10 @@ settings = get_settings()
 @app.get('/health')
 def health_check():
     return { 'message': 'App is up and running' }
+
+@app.post('/ws')
+def socket():
+    return {'message': 'Chat Application'}
 
 @app.sio.on('join')
 async def handle_join(sid, *args, **kwargs):
@@ -64,3 +69,6 @@ async def disconnect(sid):
 app.include_router(chat_router)
 app.include_router(user_router)
 
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
