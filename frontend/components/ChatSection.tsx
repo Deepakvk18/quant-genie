@@ -5,21 +5,24 @@ import { ArrowUp } from 'lucide-react';
 import Message from './Message';
 import { ChevronLeft, Menu } from 'lucide-react';
 import { io } from 'socket.io-client';
-import Avatar from 'react-avatar';
-
 import Intro from './Intro';
-import AccountForm from './AccountForm';
+import { useRecoilValue } from 'recoil';
+import { accessAtom, userAtom } from '@/store';
+import { IChat, IMessage } from '@/lib/types';
 
-const ChatSection = ({ history, setHistory, setAccount }) => {
-  
-  const [messages, setMessages] = useState([]);
+const ChatSection = ({ history, 
+                      setHistory, 
+                      setAccount, 
+                      chat,
+                      setChat }) => {
 
-  const [socket, setSocket] = useState<any>(null)
-  const [historyData, setHistoryData] = useState([])
-  
-  // const user = useRecoilValue(userAtom)
-  // const access = useRecoilValue(accessAtom)
-  // const refresh = useRecoilValue(refreshAtom)
+  const [socket, setSocket] = useState<any>(null) 
+  const access = useRecoilValue(accessAtom)
+  const [chatId, setChatId] = useState('')
+  const user = useRecoilValue(userAtom)
+
+  const [messages, setMessages] = useState<IMessage[]>([])
+  const [chatHistory, setChatHistory] = useState<string>('')
 
   const scrollToBottom = ()=>{
     const chatArea = document.getElementById('dummy-div')
@@ -27,44 +30,50 @@ const ChatSection = ({ history, setHistory, setAccount }) => {
   }
 
   useEffect(()=>{
+    setMessages(chat?.messages?.length > 0 ? chat?.messages : [])
+    setChatHistory(chat?.chat_history)
+  }, [chat])
+
+  useEffect(()=>{
+ 
     const socket = io('ws://localhost:8000', {
       path: '/ws/socket.io',
       autoConnect: false,
       transports: ['websocket'],
-      upgrade: false
+      upgrade: false,
+      auth: {
+        headers: access
+      }
     })
-    setSocket(socket)
-    
 
-    socket.on("connect", ()=>{
+    socket?.on("connect", ()=>{
       console.log("Connected!!", socket.id);
     })
   
-    socket.on("response", ()=>{
-      console.log("Response", socket.id);
-    })
-  
-    socket.on("message", (data)=>{
-
+    socket?.on("message", (data)=>{
       const jsonData = JSON.parse(data)
-      console.log("Inside on message", historyData);
+      console.log(jsonData);
       
-      console.log(jsonData, typeof jsonData, data?.jsonData);
-      setMessages((prevMessages)=>[...prevMessages, {sender: 'Genie', text:jsonData?.output}]);
-      setHistoryData(jsonData?.chat_history)  
+      setMessages((prevMessages)=>{
+        return [ ...prevMessages, { output: jsonData?.output }]
+      })
+      setChatId(jsonData.chat_id)
       scrollToBottom()
+      setChatHistory(jsonData?.chat_history)
       setLoading(false)
     })
-
-    socket.on("connect_error", (err)=>{
-      console.error(`Error due to ${err.message}`);
+  
+    socket?.on("connect_error", (err: any)=>{
+      console.error(`Error due to ${err?.message}`);
     })
   
-    socket.on("disconnect", ()=>{
+    socket?.on("disconnect", ()=>{
       console.log("Disconnect");
       socket.removeAllListeners();  
-      
     })
+    setSocket(socket)
+    
+    
     scrollToBottom()
     socket.connect()
 
@@ -76,16 +85,14 @@ const ChatSection = ({ history, setHistory, setAccount }) => {
       socket.disconnect()
       socket.removeAllListeners()
     }
-  }, [])
+  }, [access])
 
   const [loading, setLoading] = useState(false)
-  const [loadingText, setLoadingText] = useState('')
-  const loadingTextArray = ['Thinking....', 'Getting Data...', 'Analyzing Data...', 'Getting Results...', 'Preparing Final Output...']
 
   useEffect(() => {
     const textarea = document.getElementById('autoresize');
     
-    
+
     function autoResize() {
         this.style.height = 'auto';
         this.style.height = this.scrollHeight + 'px';    
@@ -99,29 +106,31 @@ const ChatSection = ({ history, setHistory, setAccount }) => {
 
   const [message, setMessage] = useState('')
 
-  const handleSendMessage = (text) => {
+  const handleSendMessage = async (text: string) => {
     setLoading(true)
-    const newMessage = { sender: 'user', text: text };
-    socket.emit('message', {input: text, chat_history: historyData})
-    setMessages((prevMessages)=>[...prevMessages, newMessage]);
+    const newMessage = { input: text.trim() };
+    socket.emit('message', { llmInput: { input: text, chat_history: chat?.chat_history }, chatId})
+    console.log(messages);
+    await setMessages(prevMessages=>[ ...prevMessages, newMessage ])
+    console.log(messages);
     scrollToBottom()
   };
 
   
 
   return (
-    <div id='chat-area' className={`relative h-[85%] w-full m-auto pb-28 pt-14 overflow-y-auto flex flex-col items-center chat-scrollbar ${history && 'invisible md:visible'}`}>
-      
+    <div id='chat-area' className={`relative h-[85%] w-full m-auto pb-28 pt-14 overflow-y-auto flex flex-col items-center chat-scrollbar ${history && 'invisible sm:visible'}`}>
+        
         <Menu 
           onClick={()=>setHistory(true)}
           className={`cursor-pointer fixed inset-0 mt-4 ml-4 items-start gap-10 hover:opacity-40 ${history && 'invisible'}`}
           size='20'
         />
-          { messages.length === 0 ?
+          {  messages?.length === 0 || !chat ?
             <Intro 
               setAccount={setAccount}
             />
-          : messages.map((message, index) => (
+          : messages?.map((message: IMessage, index: number) => (
             <Message key={index} {...message} />
           ))}
           
@@ -157,7 +166,12 @@ const ChatSection = ({ history, setHistory, setAccount }) => {
                   className={`text-gray-400 cursor-text w-full h-full ${loading && 'text-center items-center'}`}>{`${loading ?  "Loading..." : (!message ? "Type your query...": '')}`}</p>
               </label>
               <div>
-                <button disabled={message === ""} className={`absolute right-5 top-5 rounded-md cursor-pointer hover:opacity-80 bg-white disabled:opacity-30 ${loading && 'invisible'}`} type='submit' onClick={handleSendMessage}>
+                <button 
+                  disabled={message === ""}
+                   className={`absolute right-5 top-5 rounded-md cursor-pointer hover:opacity-80 bg-white disabled:opacity-30 ${loading && 'invisible'}`} 
+                   type='submit' 
+                   onClick={()=>handleSendMessage(message)}
+                >
                   <ArrowUp 
                     color='black'
                   />
@@ -170,7 +184,7 @@ const ChatSection = ({ history, setHistory, setAccount }) => {
           </p>
       </div>
       <ChevronLeft 
-        className={`fixed left-[260px] hover:opacity-50 top-4 cursor-pointer ${history ? 'visible': 'invisible'}`}
+        className={`absolute left-0 inset-0 block my-auto hover:opacity-50 top-4 cursor-pointer ${history ? 'visible': 'invisible'}`}
         onClick={()=>setHistory(false)}
         size='20'
         color='gray'

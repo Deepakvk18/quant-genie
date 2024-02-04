@@ -1,14 +1,19 @@
 from pydantic import BaseModel, Field
 from typing import List
-from bson import ObjectId
+from datetime import datetime
+
+class Output(BaseModel):
+    text: str
+    images: List[str]
 
 class Message(BaseModel):
     input: str
-    output: str
+    output: Output
 
 class ChatModel(BaseModel):
-    id: str = Field(alias='_id')
+    id: str| None = Field(alias='_id')
     user_id: str
     title: str
     messages: List[Message]
-    chat_history: str
+    chat_history: str | None
+    last_accessed_date: datetime | None

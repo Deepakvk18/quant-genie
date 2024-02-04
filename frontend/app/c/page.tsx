@@ -1,15 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react";
-import ChatSection from "../../../components/ChatSection";
+import { useState } from "react";
+import ChatSection from "@/components/ChatSection";
 import SidebarSection from "@/components/SideBar";
 import AccountForm from "@/components/AccountForm";
 import useAxios from "@/lib/axios";
+import { useQuery } from '@tanstack/react-query'
 import { IChat } from "@/lib/types";
 import { useRecoilValue } from "recoil";
-import { accessAtom, userAtom } from "@/store";
-import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { userAtom } from "@/store";
 
 interface IChatParams {
   params: { 
@@ -17,14 +16,13 @@ interface IChatParams {
   }
 }
 
-export default function Page({ params }: IChatParams) {
-
-  const { session } = params
+export default function Page() {
 
   const [history, setHistory] = useState(true)
   const [account, setAccount] = useState(false)
   const user = useRecoilValue(userAtom)
-  const [chat, setChat] = useState<IChat | null>({
+  
+  const [chat, setChat] = useState<IChat>({
     id: '',
     user_id: user?._id,
     messages: [],
@@ -32,34 +30,16 @@ export default function Page({ params }: IChatParams) {
     last_accessed_date: new Date()
   })
 
-  const accessToken = useRecoilValue(accessAtom)
-  const router = useRouter()
-  const refresh = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null 
-
-  const axios = useAxios()
-  const { data: chatSession, error } = useQuery({
-    queryKey: [`getChat-${session}`],
-    queryFn: async ()=>{
-      const res = await axios.get(`chat/${session}`)
-      return res?.data
-    }
-  })
-
-  useEffect(()=>{
-    if (!refresh) {
-      router.push('/')
-      return
-    }
-    if (error) router.push('/c')
-    setChat(chatSession)
-  }, [chatSession, error])
 
   
   return (
     <div className="relative w-screen flex flex-row justify-center border-white/20 h-screen max-h-screen items-center overflow-hidden">
+
+      <title>New Chat</title>
+
       { history && <div className="relative h-screen max-w-[260px] w-[260px] px-4">          
           <SidebarSection 
-            session={session} 
+            session={undefined} 
             setAccount={setAccount}
           />
       </div> }

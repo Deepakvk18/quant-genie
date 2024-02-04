@@ -1,14 +1,14 @@
 import {
-    atom,
-    selector,
-    useRecoilState,
-    useRecoilValue,
+    atom
   } from 'recoil';
   import { TUser } from '@/lib/types';
 
-export const userAtom = atom<TUser | undefined>({
+export const userAtom = atom<TUser>({
     key: 'userAtom',
-    default: undefined,
+    default: {
+        _id: '',
+        email: '',
+    },
 })
 
 export const accessAtom = atom<string | undefined>({

@@ -50,7 +50,7 @@ async def refresh(response: Response, credentials: JwtAuthorizationCredentials =
     refresh_token = access_security.create_refresh_token(subject=credentials.subject)
     refresh_security.set_refresh_cookie(response=response, refresh_token=refresh_token, expires_delta=timedelta(seconds=settings.REFRESH_EXPIRY))
     access_security.set_access_cookie(response=response, access_token=access_token, expires_delta=timedelta(seconds=settings.ACCESS_EXPIRY))
-    email = credentials.subject.get('email')
-    login_user = user.get_user_by_email(email)
+    user_id = credentials.subject.get('userId')
+    login_user = user.get_user(user_id)
     login_user['_id'] = str(login_user['_id'])
     return {"access_token": access_token, 'refresh_token': refresh_token, 'user': login_user}

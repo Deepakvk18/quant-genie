@@ -1,16 +1,12 @@
 from functools import lru_cache
 import config
-import os
 from passlib.context import CryptContext
 from dotenv import load_dotenv
 from google.cloud import storage
-import io
 import matplotlib.pyplot as plt
-import logging
 
 # storage_client = storage.Client(project=os.getenv('GCP_PROJECT_ID'))
 # bucket = storage_client.bucket(os.getenv('GCP_STORAGE_BUCKET'))
-logging.getLogger('passlib').setLevel(logging.ERROR)
 
 @lru_cache
 def get_settings():

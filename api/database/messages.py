@@ -1,6 +1,5 @@
 from pymongo import MongoClient
 from utils import get_settings
-from models.chat import Message
 from schema.chat import CreateChat, UpdateChat
 from typing import List
 from pymongo import ReturnDocument
@@ -29,11 +28,14 @@ class ChatRepo:
         return chat
     
     def get_chats(self, user_id: str):
+        print(user_id)
         chats = self.db.find({ 'user_id': user_id })
         if not chats:
             raise QuantGenieException('No Chat history found')
-        return chats
-
-
+        chat_list = []
+        for chat in chats:
+            chat['_id'] = str(chat['_id'])
+            chat_list.append(chat)
+        return chat_list
 
     

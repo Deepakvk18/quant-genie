@@ -60,7 +60,7 @@ const SignInForm = () => {
         setAccess(res?.access_token)
         setRefresh(res?.refresh_token)
         localStorage.setItem('refreshToken', res?.refresh_token)
-        router.push('/c/asdsa')
+        router.push('/c')
     }
 
   return (

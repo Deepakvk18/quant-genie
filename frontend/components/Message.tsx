@@ -1,29 +1,63 @@
 import Avatar from "react-avatar";
 import { useRecoilValue } from 'recoil'
 import { userAtom } from '@/store';
+import { IMessage } from "@/lib/types";
+import Image from "next/image";
 
-const Message = ({ sender, text }) => {
+const Message = (message: IMessage) => {
   
   const user = useRecoilValue(userAtom)
   
   return (
-    <div 
-      className={`flex flex-col message rounded-xl ${sender === 'Genie' ? 'bg-gray-600' : 'Genie-message'} w-[50%] my-2 p-4`}
-    >
-  
-      <div className='flex w-full items-center'>
-        <Avatar 
-            src={ sender === 'user' ? '': '/QuantGenie.png'}
-            name={sender === 'user' ? user?.email: ''}
-            alt={`${sender}-avatar`}
-            size='30'
-            className='rounded-full -ml-8'
-        />
-        <strong>{sender === 'user' ? 'You' : 'Genie'}</strong> 
-      </div>
-      <div className='text-sm font-sans w-full flex break-all whitespace-pre-line flex-wrap'>
-        {text}
-      </div>
+    <div className="flex flex-col w-full items-center justify-end">
+      {message?.input && <div 
+        className={`flex flex-col message rounded-xl w-[50%] my-2 p-4`}
+      >
+        <div>
+          <div className='flex w-full items-center'>
+            <Avatar 
+                name={user?.email}
+                alt={`${user?.email}-avatar`}
+                size='30'
+                className='rounded-full -ml-8'
+            />
+            <strong>You</strong> 
+          </div>
+          <div className='text-sm font-sans w-full flex break-all whitespace-pre-line flex-wrap'>
+            {message?.input}
+          </div>
+        </div>
+      </div>}
+      { message?.output && <div 
+        className={`flex flex-col message rounded-xl bg-gray-600 w-[50%] my-2 p-4`}
+      >
+        <div>
+          <div className='flex w-full items-center'>
+            <Avatar 
+                src={'/QuantGenie.png'}
+                alt={`genie-avatar`}
+                size='30'
+                className='rounded-full -ml-8'
+            />
+            <strong>Genie</strong> 
+          </div>
+          <div className='text-sm font-sans w-full flex break-all whitespace-pre-line flex-wrap'>
+            {message?.output?.text}
+          </div>
+        </div>
+        <ul className="flex flex-row flex-wrap gap-2 my-2">
+          { message?.output?.urls?.map((url)=>
+            <Image 
+              key={url}
+              className="rounded-md"
+              src={'/QuantGenie.png'}
+              alt="graph"
+              width={100}
+              height={100}
+            />
+          )}
+        </ul>
+      </div> }
     </div>
   )};
 

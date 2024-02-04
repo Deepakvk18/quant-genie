@@ -10,7 +10,7 @@ const Intro = ({ setAccount }) => {
     const user = useRecoilValue(userAtom)
 
   return (
-    <div className='flex flex-col gap-8 flex-wrap w-[80%] lg:w-[50%] bg-slate-600 rounded-xl p-4 text-sm'>
+    <div className='flex flex-col gap-x-8 flex-wrap w-[80%] lg:w-[50%] bg-slate-600 rounded-xl p-4 text-sm'>
         <div className='flex lg:flex-row gap-4'>
             <div className='flex flex-row gap-4 items-center w-1/2'>
                 <Avatar 
