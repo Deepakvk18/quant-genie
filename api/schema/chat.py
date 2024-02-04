@@ -17,3 +17,12 @@ class UpdateChat(BaseModel):
 
 class Chats(BaseModel):
     chats: List[ChatModel]
+
+class InputSchema(BaseModel):
+    input: str
+    chat_history: str
+
+class UserMessage(BaseModel):
+    llmInput: InputSchema
+    chatId: str
+    userId: str

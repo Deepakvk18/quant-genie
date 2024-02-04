@@ -7,11 +7,16 @@ from fastapi_socketio import SocketManager
 import json
 
 from llm.agent import agent_executor
-from langchain.load import dumps, loads
-from database.messages import ChatRepo
+from schema.chat import UserMessage
+from jobs.chat import add_to_chat
+from rq import Queue, Worker
+import redis
+from fastapi import BackgroundTasks
 
 app = FastAPI()
 sio = SocketManager(app, cors_allowed_origins=[])
+background_tasks = BackgroundTasks()
+settings = get_settings()
 
 app.add_middleware(
         CORSMiddleware,
@@ -20,6 +25,9 @@ app.add_middleware(
         allow_methods=["*"],
         allow_headers=["*"],
     )
+redis_conn = redis.from_url(settings.REDIS_URL)
+task_queue = Queue("chat_queue", connection=redis_conn)
+worker = Worker([task_queue], connection=redis_conn)
 
 settings = get_settings()
 
@@ -36,14 +44,26 @@ async def connect(sid, environ, auth):
     print('Connected!!', sid)
 
 @sio.on('message')
-async def message(sid, message):
+async def message(sid: str, message: UserMessage):
 
-    query_dict = loads(json.dumps(message))
     print('New Message', message)
-    # response = await agent_executor.acall(query_dict)
-    response = { 'output': { 'text': 'Thank you for reaching out to Quant-Genie. Your queries will be resolved in no time.', 'urls': ['http://none.com', 'http://local.com'] }, 'chat_id': 'sajfdhisfh', 'chat_history': "Nah I'd win"}
+    user_id = message.get('userId')
+    try:
+        # response = await agent_executor.acall(message.get('llmInput))
+        # raise QuantGenieException('No error')
+        response = { 'output': { 'text': 'Thank you for reaching out to Quant-Genie. Your queries will be resolved in no time.', 'images': ['http://none.com', 'http://local.com'] }, 'chatId': message.get('chatId'), 'chat_history': "Nah I'd win", 'userId': user_id}
 
-    await sio.emit('message', dumps(response), to=sid)
+        await sio.emit('message', dumps(response), to=sid)
+    except Exception as e:
+        response = { 'output': { 'text': e.message, 'error': True, 'images': [] }, 'chat_id': 'sajfdhisfh', 'chat_history': "Nah I'd win", 'chatId': message.get('chatId'), 'userId': user_id}
+        await sio.emit('message', dumps(response), to=sid)
+    
+    background_tasks.add_task(add_to_chat, user_id=user_id, message={ 'input': message.get('llmInput').get('input'), 'output': response.get('output') } , chat_id=message.get('chatId'), chat_history=response.get('chat_history'))
+    return
+
+
+    
+    
 
 @sio.on('disconnect')
 async def disconnect(sid):

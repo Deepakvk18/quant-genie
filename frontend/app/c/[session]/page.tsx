@@ -29,6 +29,7 @@ export default function Page({ params }: IChatParams) {
     user_id: user?._id,
     messages: [],
     chat_history: '',
+    title: 'New Chat',
     last_accessed_date: new Date()
   })
 
@@ -57,6 +58,7 @@ export default function Page({ params }: IChatParams) {
   
   return (
     <div className="relative w-screen flex flex-row justify-center border-white/20 h-screen max-h-screen items-center overflow-hidden">
+      <title>{chat?.title}</title>
       { history && <div className="relative h-screen max-w-[260px] w-[260px] px-4">          
           <SidebarSection 
             session={session} 
@@ -69,7 +71,7 @@ export default function Page({ params }: IChatParams) {
             setHistory={setHistory}
             setAccount={setAccount}
             chat={chat}
-            setChat={setChat}
+            session={session}
           />
       </div>
       { account && <div className="absolute flex inset-0 z-50 w-screen min-h-screen justify-center items-center bg-gray-700/70 h-full">

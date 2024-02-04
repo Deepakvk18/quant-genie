@@ -29,8 +29,6 @@ export default function Page() {
     chat_history: '',
     last_accessed_date: new Date()
   })
-
-
   
   return (
     <div className="relative w-screen flex flex-row justify-center border-white/20 h-screen max-h-screen items-center overflow-hidden">
@@ -49,7 +47,7 @@ export default function Page() {
             setHistory={setHistory}
             setAccount={setAccount}
             chat={chat}
-            setChat={setChat}
+            session={''}
           />
       </div>
       { account && <div className="absolute flex inset-0 z-50 w-screen min-h-screen justify-center items-center bg-gray-700/70 h-full">

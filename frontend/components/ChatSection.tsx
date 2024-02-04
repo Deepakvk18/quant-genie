@@ -14,11 +14,11 @@ const ChatSection = ({ history,
                       setHistory, 
                       setAccount, 
                       chat,
-                      setChat }) => {
+                      session }) => {
 
   const [socket, setSocket] = useState<any>(null) 
   const access = useRecoilValue(accessAtom)
-  const [chatId, setChatId] = useState('')
+  const [chatId, setChatId] = useState<string>(session)
   const user = useRecoilValue(userAtom)
 
   const [messages, setMessages] = useState<IMessage[]>([])
@@ -57,7 +57,7 @@ const ChatSection = ({ history,
       setMessages((prevMessages)=>{
         return [ ...prevMessages, { output: jsonData?.output }]
       })
-      setChatId(jsonData.chat_id)
+      setChatId(jsonData.chatId)
       scrollToBottom()
       setChatHistory(jsonData?.chat_history)
       setLoading(false)
@@ -109,10 +109,8 @@ const ChatSection = ({ history,
   const handleSendMessage = async (text: string) => {
     setLoading(true)
     const newMessage = { input: text.trim() };
-    socket.emit('message', { llmInput: { input: text, chat_history: chat?.chat_history }, chatId})
-    console.log(messages);
+    await socket.emit('message', { llmInput: { input: text, chat_history: chatHistory }, chatId, userId: user?._id})
     await setMessages(prevMessages=>[ ...prevMessages, newMessage ])
-    console.log(messages);
     scrollToBottom()
   };
 

@@ -15,7 +15,14 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ACCESS_EXPIRY: int
     REFRESH_EXPIRY: int
+
     GCP_BUCKET_ID: str
     GCP_PROJECT_ID: str
+
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_USER: str
+    REDIS_PASSWORD: str
+    REDIS_URL: str
     
     model_config = SettingsConfigDict(env_file=".env")

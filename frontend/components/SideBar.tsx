@@ -11,7 +11,7 @@ import { useQuery } from '@tanstack/react-query'
 import useAxios from "@/lib/axios";
 
 const SidebarItem = ({ chatObject }) => (
-  <div  className="group">
+  <div className="group">
     <p className="flex items-center rounded-lg py-2 relative text-sm max-w-full whitespace-nowrap text-ellipsis">
         {chatObject.title}
     </p>

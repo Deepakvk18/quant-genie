@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from utils import get_settings
-from schema.chat import CreateChat, UpdateChat
+from schema.chat import CreateChat
+from models.chat import ChatModel
 from typing import List
 from pymongo import ReturnDocument
 from bson import ObjectId
@@ -15,10 +16,11 @@ class ChatRepo:
         self.db = self.client['quant-genie']['chats']
     
     def new_chat(self, chat_create: CreateChat):
-        return self.db.insert_one(chat_create.model_dump(), ).inserted_id
+        chat_id = self.db.insert_one(chat_create.model_dump()).inserted_id 
+        return self.db.find_one({ '_id': chat_id })
 
-    def add_chat(self, updated_chat: UpdateChat):
-        response = self.db.find_one_and_update({ '_id': ObjectId(updated_chat.chat_id) }, { '$set': { 'messages': updated_chat.model_dump().get('messages') } }, upsert=False, return_document=ReturnDocument.AFTER)
+    def add_chat(self, updated_chat: ChatModel):
+        response = self.db.find_one_and_update({ '_id': ObjectId(updated_chat.id) }, { '$set': { 'messages': updated_chat.model_dump().get('messages') } }, upsert=False, return_document=ReturnDocument.AFTER)
         return response
 
     def get_chat(self, chat_id: str):

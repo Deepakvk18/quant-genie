@@ -29,7 +29,7 @@ const Message = (message: IMessage) => {
         </div>
       </div>}
       { message?.output && <div 
-        className={`flex flex-col message rounded-xl bg-gray-600 w-[50%] my-2 p-4`}
+        className={`flex flex-col message rounded-xl bg-gray-600 w-[50%] my-2 p-4 ${message?.output?.error && 'ring-1 ring-red-600'}`}
       >
         <div>
           <div className='flex w-full items-center'>
@@ -46,7 +46,7 @@ const Message = (message: IMessage) => {
           </div>
         </div>
         <ul className="flex flex-row flex-wrap gap-2 my-2">
-          { message?.output?.urls?.map((url)=>
+          { message?.output?.images?.map((url)=>
             <Image 
               key={url}
               className="rounded-md"
