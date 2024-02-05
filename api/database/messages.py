@@ -17,8 +17,7 @@ class ChatRepo:
     def new_chat(self, chat_create: dict):
         chat_create['last_accessed_date'] = datetime.datetime.now()
         chat_create['chat_history'] = ''
-        chat_id = self.db.insert_one(chat_create).inserted_id 
-        return self.db.find_one({ '_id': chat_id })
+        return str(self.db.insert_one(chat_create).inserted_id)
 
     def get_chat(self, chat_id: str):
         chat = self.db.find_one({ '_id': ObjectId(chat_id) })
@@ -52,4 +51,4 @@ class MessageRepo:
         return messages
 
     def add_message(self, chat_id: str, message: dict):
-        return self.db.insert_one({ 'chat_id': chat_id, 'message': message })
+        return self.db.insert_one({ 'chat_id': chat_id, 'message': message, 'time_of_message': datetime.datetime.now() })

@@ -3,7 +3,9 @@ services:
   ui:
     depends_on:
       - api
-    build: ./frontend
+      - redis
+    build: 
+      context: ./frontend
     ports:
       - 3000:3000
     develop:
@@ -17,7 +19,11 @@ services:
           action: sync
 
   api:
-    build: ./api
+    depends_on:
+      - redis
+    build: 
+      context: ./api
+    image: qgenie-api
     ports:
       - 8000:8000
     develop:
@@ -27,4 +33,18 @@ services:
         - path: ./api
           target: /app
           action: sync
+  
+  redis:  
+    image: redis:7.0.11-alpine
+    hostname: redis-server
+    ports:
+      - 6379:6379
+  
+  worker:
+    image: qgenie-api
+    depends_on:
+        - redis
+    command: rqworker --url redis://redis-server:6379 chat_queue
+    links:
+        - redis
 

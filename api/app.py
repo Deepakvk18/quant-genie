@@ -6,12 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi_socketio import SocketManager
 from langchain.load import dumps, loads
 import json
-
+from database.messages import ChatRepo
 from llm.agent import agent_executor
-from utils import summarizer_chain
+from utils import summarizer_chain, title_chain
 from schema.chat import UserMessage
 from jobs.chat import add_to_chat
-from rq import Queue, Worker
+from rq import Queue
 import redis
 
 app = FastAPI()
@@ -25,9 +25,9 @@ app.add_middleware(
         allow_methods=["*"],
         allow_headers=["*"],
     )
-redis_conn = redis.from_url('redis://redis-server:6379')
+redis_conn = redis.from_url(settings.REDIS_URL)
 task_queue = Queue("chat_queue", connection=redis_conn)
-worker = Worker([task_queue], connection=redis_conn)
+chat_repo = ChatRepo()
 
 settings = get_settings()
 
@@ -46,9 +46,13 @@ async def connect(sid, environ, auth):
 @sio.on('message')
 async def message(sid: str, message: UserMessage):
     message = loads(json.dumps(message))
+    chat_id = message.get('chatId')
+    print(message)
+    if not chat_id:
+        title = title_chain.invoke({'message': message.get('llmInput').get('input')})
+        chat_id = chat_repo.new_chat({ 'user_id': message.get('userId'), 'title': title })
     try:
         # agent_response = await agent_executor.acall(message.get('llmInput')) 
-        print(message)
         agent_response = {
             'output': "Nah, I'd win",
             'chat_history': "Let's go you bozos"
@@ -63,7 +67,7 @@ async def message(sid: str, message: UserMessage):
                 'text': agent_response.get('output')
                 }, 
                 'chat_history': summarizer, 
-                'chatId': message.get('chatId'), 
+                'chatId': chat_id, 
                 'userId': message.get('userId')
             }
         await sio.emit('message', dumps(response), to=sid)
@@ -75,10 +79,12 @@ async def message(sid: str, message: UserMessage):
                 'images': [] 
                 }, 
                 'chat_history': message.get('chat_history'), 
-                'chatId': message.get('chatId'), 
+                'chatId': chat_id, 
                 'userId': message.get('userId')
             }
         await sio.emit('message', dumps(response), to=sid)
+    
+        
     
     task_queue.enqueue(add_to_chat,
             user_id=message.get('userId'), 
@@ -86,7 +92,7 @@ async def message(sid: str, message: UserMessage):
                 'input': message.get('llmInput').get('input'), 
                 'output': response.get('output') 
                 } , 
-            chat_id=message.get('chatId'), 
+            chat_id=chat_id, 
             chat_history=response.get('chat_history'))
     return
 

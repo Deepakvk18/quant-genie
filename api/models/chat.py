@@ -16,6 +16,6 @@ class Message(BaseModel):
 class ChatModel(BaseModel):
     id: str| None = Field(alias='_id')
     user_id: str
-    title: str
+    title: str | None = None
     chat_history: str | None = None
     last_accessed_date: datetime | None

@@ -50,8 +50,12 @@ HISTORY: {history}
 CURRENT MESSAGE: {message}
 """
 summarizer = GoogleGenerativeAI(model='gemini-pro', google_api_key=settings.GOOGLE_API_KEY)
-prompt = PromptTemplate.from_template(template=SUMMARIZER_PROMPT)
-summarizer_chain = prompt | summarizer
+summarizer_prompt = PromptTemplate.from_template(template=SUMMARIZER_PROMPT)
+summarizer_chain = summarizer_prompt | summarizer
     
-
-    
+TITLE_PROMPT = """
+You are a helpful title giver. Your task is to give titles for the given message in less than 30 characters. Give a title for the following message: {message}
+"""
+title_llm = GoogleGenerativeAI(model='gemini-pro', google_api_key=settings.GOOGLE_API_KEY)
+title_prompt = PromptTemplate.from_template(template=TITLE_PROMPT)
+title_chain = title_prompt | title_llm
