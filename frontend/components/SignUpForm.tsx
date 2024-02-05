@@ -21,7 +21,7 @@ import { ISignup } from "@/lib/types"
 import useAxios from "@/lib/axios"
 
 
-const SignUpForm = () => {
+const SignUpForm = ({ setScreen }) => {
 
     const [showPassword, setShowPassword] = useState(false)
     const router = useRouter()
@@ -110,7 +110,7 @@ const SignUpForm = () => {
             <div className="flex flex-col w-full items-center">
                 <div className="w-full text-xs my-2 font-didact_gothic text-left">
                 Already have an account?
-                    <Link className="hover:underline text-blue-700 dark:text-blue-300" href="/login"> Login</Link>
+                    <p className="hover:underline text-blue-700 dark:text-blue-300 cursor-pointer" onClick={()=>setScreen('/login')}> Login</p>
                 </div>
 
                 <Button className="w-full rounded-sm bg-[#3C46FF] hover:bg-[#0000FF] text-white" type="submit">Signup with Email</Button>
@@ -119,7 +119,7 @@ const SignUpForm = () => {
         </form>
         <div className="w-full text-xs my-2 font-didact_gothic text-left">
             Go to homepage
-            <Link className="hover:underline text-blue-700 dark:text-blue-300" href="/"> QuantGenie</Link>
+            <p className="hover:underline text-blue-700 dark:text-blue-300 cursor-pointer" onClick={()=>setScreen('/')}> QuantGenie</p>
         </div>
             
         </Form>

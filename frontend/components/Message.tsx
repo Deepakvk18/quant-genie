@@ -11,7 +11,7 @@ const Message = (message: IMessage) => {
   return (
     <div className="flex flex-col w-full items-center justify-end">
       {message?.input && <div 
-        className={`flex flex-col message rounded-xl w-[50%] my-2 p-4`}
+        className={`flex flex-col message rounded-xl w-[70%] sm:w-[50%] my-2 p-4`}
       >
         <div>
           <div className='flex w-full items-center'>
@@ -29,7 +29,7 @@ const Message = (message: IMessage) => {
         </div>
       </div>}
       { message?.output && <div 
-        className={`flex flex-col message rounded-xl bg-gray-600 w-[50%] my-2 p-4 ${message?.output?.error && 'ring-1 ring-red-600'}`}
+        className={`flex flex-col message rounded-xl bg-gray-600 w-[70%] sm:w-[50%] my-2 p-4 ${message?.output?.error && 'ring-1 bg-red-500/60'}`}
       >
         <div>
           <div className='flex w-full items-center'>

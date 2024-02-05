@@ -4,7 +4,6 @@ from models.chat import Message, ChatModel
 
 class CreateChat(BaseModel):
     user_id: str
-    messages: List[Message]
     title: str
 
 class CreateChatSuccess(BaseModel):
@@ -26,3 +25,6 @@ class UserMessage(BaseModel):
     llmInput: InputSchema
     chatId: str
     userId: str
+
+class GetMessages(BaseModel):
+    messages: List[Message]

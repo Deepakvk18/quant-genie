@@ -1,0 +1,30 @@
+
+services:
+  ui:
+    depends_on:
+      - api
+    build: ./frontend
+    ports:
+      - 3000:3000
+    develop:
+      watch:
+        - path: ./frontend/package.json
+          action: rebuild
+        - path: ./frontend/package-lock.json
+          action: rebuild
+        - path: ./frontend
+          target: /app
+          action: sync
+
+  api:
+    build: ./api
+    ports:
+      - 8000:8000
+    develop:
+      watch:
+        - path: ./api/requirements.txt
+          action: rebuild
+        - path: ./api
+          target: /app
+          action: sync
+

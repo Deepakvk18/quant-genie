@@ -29,7 +29,8 @@ const SidebarSection = ({ session, setAccount }) => {
     queryFn: async ()=>{
       const res = await axios.get('/chats')
       return res?.data
-    }
+    },
+    staleTime: 600
   })
 
   useEffect(()=>{

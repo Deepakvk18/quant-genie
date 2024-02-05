@@ -3,7 +3,8 @@ import config
 from passlib.context import CryptContext
 from dotenv import load_dotenv
 from google.cloud import storage
-import matplotlib.pyplot as plt
+from langchain_google_genai import GoogleGenerativeAI
+from langchain.prompts import PromptTemplate
 
 # storage_client = storage.Client(project=os.getenv('GCP_PROJECT_ID'))
 # bucket = storage_client.bucket(os.getenv('GCP_STORAGE_BUCKET'))
@@ -12,6 +13,8 @@ import matplotlib.pyplot as plt
 def get_settings():
     load_dotenv()
     return config.Settings()
+
+settings = get_settings()
 
 
 class PasswordHasher:
@@ -37,3 +40,18 @@ class PasswordHasher:
 #     buf.close()
 
 #     return blob.public_url
+
+
+SUMMARIZER_PROMPT = """
+You are a helpful summarizer. Everytime I give you a history and current message, you summarize them for me in less than 2000 words. Summarize that user asked this and Genie told that. 
+
+HISTORY: {history}
+
+CURRENT MESSAGE: {message}
+"""
+summarizer = GoogleGenerativeAI(model='gemini-pro', google_api_key=settings.GOOGLE_API_KEY)
+prompt = PromptTemplate.from_template(template=SUMMARIZER_PROMPT)
+summarizer_chain = prompt | summarizer
+    
+
+    

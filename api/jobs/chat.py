@@ -1,23 +1,23 @@
-from database.messages import ChatRepo
-import datetime
+from database.messages import ChatRepo, MessageRepo
+from models.chat import Message
+from exceptions import QuantGenieException
 
 chat_repo = ChatRepo()
+message_repo = MessageRepo()
 
-def add_to_chat(user_id, chat_id, message, chat_history):
+def add_to_chat(user_id:str, chat_id:str, message:Message, chat_history:str):
     if chat_id:
-        chat = chat_repo.get_chat(chat_id)
+        chat = chat_repo.update_history_time(chat_id, chat_history)
+        if (chat.get('user_id') != user_id):
+            raise QuantGenieException('This is not your chat')
+        message = message_repo.add_message(chat_id, message)
     else:
-        chat = chat_repo.new_chat(user_id, {'user_id': user_id, 'title': 'New Chat', 'messages': []},)
-
-    chat.get('messages').append(message)
-    chat['last_accessed_date'] = datetime.datetime.now()
-    chat['chat_history'] = chat_history
-    print(chat)
-    chat_repo.add_chat(chat)
+        title = 'New Chat II'
+        chat = chat_repo.new_chat({ 'user_id': user_id, 'title': title })
+        message = message_repo.add_message(chat.get('_id'), message)
+    chat_id = chat_id if chat_id else chat.get('_id')
+    chat_repo.update_history_time(chat_id, chat_history)
     return {'status': 'Completed'}
-
-# add_to_chat('65b34f54607a3ead8a0a0e54', '65b8e505082b1f6da7b4eedf', [{'input':
-# "How do I say 'good morning' in Tamil?", 'output': {'text': "Vanakkam! That's how you greet someone in the morning in Tamil. Want to hear how to say 'good evening' too?", 'images': ['http://none.com/1.js']}}])
 
 
 

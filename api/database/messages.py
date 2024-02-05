@@ -1,11 +1,10 @@
 from pymongo import MongoClient
 from utils import get_settings
 from schema.chat import CreateChat
-from models.chat import ChatModel
-from typing import List
-from pymongo import ReturnDocument
+from models.chat import Message
 from bson import ObjectId
 from exceptions import QuantGenieException
+import datetime
 
 settings = get_settings()
 
@@ -15,13 +14,11 @@ class ChatRepo:
         self.client = MongoClient(connection_string)
         self.db = self.client['quant-genie']['chats']
     
-    def new_chat(self, chat_create: CreateChat):
-        chat_id = self.db.insert_one(chat_create.model_dump()).inserted_id 
+    def new_chat(self, chat_create: dict):
+        chat_create['last_accessed_date'] = datetime.datetime.now()
+        chat_create['chat_history'] = ''
+        chat_id = self.db.insert_one(chat_create).inserted_id 
         return self.db.find_one({ '_id': chat_id })
-
-    def add_chat(self, updated_chat: ChatModel):
-        response = self.db.find_one_and_update({ '_id': ObjectId(updated_chat.id) }, { '$set': { 'messages': updated_chat.model_dump().get('messages') } }, upsert=False, return_document=ReturnDocument.AFTER)
-        return response
 
     def get_chat(self, chat_id: str):
         chat = self.db.find_one({ '_id': ObjectId(chat_id) })
@@ -29,8 +26,10 @@ class ChatRepo:
             raise QuantGenieException('Chat not found')
         return chat
     
+    def update_history_time(self, chat_id: str, history:str):
+        return self.db.find_one_and_update({ '_id': chat_id }, { '$set': {'chat_history': history, 'last_accessed_date': datetime.datetime.now() } })
+    
     def get_chats(self, user_id: str):
-        print(user_id)
         chats = self.db.find({ 'user_id': user_id })
         if not chats:
             raise QuantGenieException('No Chat history found')
@@ -40,4 +39,17 @@ class ChatRepo:
             chat_list.append(chat)
         return chat_list
 
+class MessageRepo:
+
+    def __init__(self, connection_string: str = settings.MONGODB_CONNECTION_URL):
+        self.client = MongoClient(connection_string)
+        self.db = self.client['quant-genie']['messages']
     
+    def get_messages(self, chat_id: str):
+        messages =  self.db.find({ 'chat_id': chat_id })
+        if not messages:
+            raise QuantGenieException('No messages Found')
+        return messages
+
+    def add_message(self, chat_id: str, message: dict):
+        return self.db.insert_one({ 'chat_id': chat_id, 'message': message })

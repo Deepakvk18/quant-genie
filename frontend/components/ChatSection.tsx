@@ -8,7 +8,9 @@ import { io } from 'socket.io-client';
 import Intro from './Intro';
 import { useRecoilValue } from 'recoil';
 import { accessAtom, userAtom } from '@/store';
-import { IChat, IMessage } from '@/lib/types';
+import { IMessage } from '@/lib/types';
+import { useQuery } from '@tanstack/react-query';
+import useAxios from '@/lib/axios';
 
 const ChatSection = ({ history, 
                       setHistory, 
@@ -23,6 +25,14 @@ const ChatSection = ({ history,
 
   const [messages, setMessages] = useState<IMessage[]>([])
   const [chatHistory, setChatHistory] = useState<string>('')
+  const axios = useAxios()
+  const { data: msgs } = useQuery({
+    queryKey: [`get-msgs-${session}`],
+    queryFn: async ()=>{
+      const res = await axios.get(`/messages/${session}`)
+      return res?.data
+    }
+  })
 
   const scrollToBottom = ()=>{
     const chatArea = document.getElementById('dummy-div')
@@ -57,7 +67,8 @@ const ChatSection = ({ history,
       setMessages((prevMessages)=>{
         return [ ...prevMessages, { output: jsonData?.output }]
       })
-      setChatId(jsonData.chatId)
+      
+      setChatId(jsonData?.chatId)
       scrollToBottom()
       setChatHistory(jsonData?.chat_history)
       setLoading(false)
@@ -71,9 +82,7 @@ const ChatSection = ({ history,
       console.log("Disconnect");
       socket.removeAllListeners();  
     })
-    setSocket(socket)
-    
-    
+    setSocket(socket)    
     scrollToBottom()
     socket.connect()
 

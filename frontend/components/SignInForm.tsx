@@ -22,7 +22,7 @@ import { userAtom, accessAtom, refreshAtom } from "@/store"
 import { TLogin, TLoginRes } from "@/lib/types"
 import useAxios from "@/lib/axios"
 
-const SignInForm = () => {
+const SignInForm = ({ setScreen }) => {
 
     const [showPassword, setShowPassword] = useState(false)
 
@@ -109,12 +109,12 @@ const SignInForm = () => {
             </div>
             <div className="text-xs my-2 font-didact_gothic">
             Don't have an account?
-            <Link className="hover:underline text-blue-700 dark:text-blue-300" href="/signup"> Sign Up!</Link>
+            <p className="hover:underline text-blue-700 dark:text-blue-300 cursor-pointer" onClick={()=>setScreen('/signup')}> Sign Up!</p>
             </div>
         </form>
         <div className="w-full text-xs my-2 font-didact_gothic text-left">
             Go to homepage
-            <Link className="hover:underline text-blue-700 dark:text-blue-300" href="/"> QuantGenie</Link>
+            <p className="hover:underline text-blue-700 dark:text-blue-300 cursor-pointer" onClick={()=>setScreen('/')}> QuantGenie</p>
         </div>
         </Form>
     </div>

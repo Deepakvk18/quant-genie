@@ -32,28 +32,20 @@ gemini = ChatGoogleGenerativeAI(
             model='gemini-pro', 
             temperature=0)
 
-memory = ConversationSummaryMemory(
-            llm=gemini, 
-            memory_key="chat_history", 
-            return_messages=True)
-
 prompt = ChatPromptTemplate.from_messages([
     ("system", SYSTEM_TEMPLATE),
-     MessagesPlaceholder(variable_name="chat_history"),
     ("user", "{input}"),
     MessagesPlaceholder(variable_name="agent_scratchpad")
 ])
 
 chain = RunnablePassthrough.assign(
-    chat_history = lambda x: x["chat_history"],
     agent_scratchpad = lambda x: format_to_openai_functions(x["intermediate_steps"])
-) | prompt | gpt | OpenAIFunctionsAgentOutputParser()
+) | prompt | gpt | OpenAIFunctionsAgentOutputParser() 
 
 agent_executor = AgentExecutor(
                     agent=chain, 
                     tools=tools, 
                     verbose=True, 
-                    memory=memory, 
                     max_iterations=5,
                     early_stopping_method="generate",
                     return_intermediate_steps=False,
