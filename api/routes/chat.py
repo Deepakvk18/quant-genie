@@ -15,7 +15,6 @@ chat_router = APIRouter(tags=["chats"])
 @chat_router.get('/chat/{chat_id}', response_model=ChatModel)
 async def get_chat(chat_id:str, credentials: JwtAuthorizationCredentials = Security(access_security), chats: ChatRepo = Depends()):
     chat = chats.get_chat(chat_id)
-    chat['_id'] = str(chat['_id'])
     return chat
 
 @chat_router.get('/chats', response_model=Chats)
@@ -28,3 +27,4 @@ async def get_chats(credentials: JwtAuthorizationCredentials = Security(access_s
 async def get_messages(chat_id: str, credentials: JwtAuthorizationCredentials = Security(access_security), messages: MessageRepo = Depends()):
     messages = messages.get_messages(chat_id=chat_id)
     return {'messages': messages}
+ 

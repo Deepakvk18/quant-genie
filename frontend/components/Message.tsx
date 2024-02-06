@@ -14,7 +14,7 @@ const Message = (message: IMessage) => {
         className={`flex flex-col message rounded-xl w-[70%] sm:w-[50%] my-2 p-4`}
       >
         <div>
-          <div className='flex w-full items-center'>
+          <div className='flex w-full items-end'>
             <Avatar 
                 name={user?.email}
                 alt={`${user?.email}-avatar`}
@@ -32,7 +32,7 @@ const Message = (message: IMessage) => {
         className={`flex flex-col message rounded-xl bg-gray-600 w-[70%] sm:w-[50%] my-2 p-4 ${message?.output?.error && 'ring-1 bg-red-500/60'}`}
       >
         <div>
-          <div className='flex w-full items-center'>
+          <div className='flex w-full items-end'>
             <Avatar 
                 src={'/QuantGenie.png'}
                 alt={`genie-avatar`}

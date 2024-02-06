@@ -41,7 +41,6 @@ async def login(login_user:UserCreate, response: Response, user: UserRepo = Depe
     refresh_token = refresh_security.create_refresh_token(subject={'userId': str(attempted_user.get('_id'))})
     refresh_security.set_refresh_cookie(response=response, refresh_token=refresh_token, expires_delta=timedelta(seconds=settings.REFRESH_EXPIRY))
     access_security.set_access_cookie(response=response, access_token=access_token, expires_delta=timedelta(seconds=settings.ACCESS_EXPIRY))
-    attempted_user['_id'] = str(attempted_user['_id'])
     return {'access_token': access_token, 'refresh_token': refresh_token, 'user': attempted_user}
 
 @user_router.post('/refresh', response_model=LoginResponse)
@@ -52,5 +51,4 @@ async def refresh(response: Response, credentials: JwtAuthorizationCredentials =
     access_security.set_access_cookie(response=response, access_token=access_token, expires_delta=timedelta(seconds=settings.ACCESS_EXPIRY))
     user_id = credentials.subject.get('userId')
     login_user = user.get_user(user_id)
-    login_user['_id'] = str(login_user['_id'])
     return {"access_token": access_token, 'refresh_token': refresh_token, 'user': login_user}

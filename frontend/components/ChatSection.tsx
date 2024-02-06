@@ -10,6 +10,7 @@ import { useRecoilValue } from 'recoil';
 import { accessAtom, userAtom } from '@/store';
 import { IMessage } from '@/lib/types';
 import { useQuery } from '@tanstack/react-query';
+import ChatSkeleton from './ChatSkeleton';
 import useAxios from '@/lib/axios';
 
 const ChatSection = ({ history, 
@@ -26,12 +27,14 @@ const ChatSection = ({ history,
   const [messages, setMessages] = useState<IMessage[]>([])
   const [chatHistory, setChatHistory] = useState<string>('')
   const axios = useAxios()
-  const { data: msgs } = useQuery({
+  const { data: msgs, isLoading, isError } = useQuery({
     queryKey: [`get-msgs-${session}`],
     queryFn: async ()=>{
       const res = await axios.get(`/messages/${session}`)
       return res?.data
-    }
+    },
+    staleTime: 60,
+    refetchInterval: 60,
   })
 
   const scrollToBottom = ()=>{
@@ -40,7 +43,6 @@ const ChatSection = ({ history,
   }
 
   useEffect(()=>{
-    setMessages(chat?.messages?.length > 0 ? chat?.messages : [])
     setChatHistory(chat?.chat_history)
   }, [chat])
 
@@ -123,6 +125,10 @@ const ChatSection = ({ history,
     scrollToBottom()
   };
 
+  useEffect(()=>{
+    if (!isError && !isLoading)
+      setMessages(msgs?.messages)    
+  }, [msgs, isLoading, isError])
   
 
   return (
@@ -133,13 +139,17 @@ const ChatSection = ({ history,
           className={`cursor-pointer fixed inset-0 mt-4 ml-4 items-start gap-10 hover:opacity-40 ${history && 'invisible'}`}
           size='20'
         />
-          {  messages?.length === 0 || !chat ?
-            <Intro 
-              setAccount={setAccount}
-            />
-          : messages?.map((message: IMessage, index: number) => (
-            <Message key={index} {...message} />
-          ))}
+          { isLoading ? 
+              <div className='flex h-full w-full justify-center items-center'>
+                <ChatSkeleton />
+              </div> :
+              messages?.length === 0 || !chat ?
+                <Intro 
+                  setAccount={setAccount}
+                />
+              : messages?.map((message: IMessage, index: number) => (
+                <Message key={index} {...message} />
+              )) }
           
 
         <div id='dummy-div' />

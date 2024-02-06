@@ -5,6 +5,7 @@ from models.chat import Message
 from bson import ObjectId
 from exceptions import QuantGenieException
 import datetime
+import pymongo
 
 settings = get_settings()
 
@@ -29,14 +30,10 @@ class ChatRepo:
         return self.db.find_one_and_update({ '_id': chat_id }, { '$set': {'chat_history': history, 'last_accessed_date': datetime.datetime.now() } })
     
     def get_chats(self, user_id: str):
-        chats = self.db.find({ 'user_id': user_id })
+        chats = self.db.find({ 'user_id': user_id }).sort('last_accessed_date', pymongo.DESCENDING)
         if not chats:
             raise QuantGenieException('No Chat history found')
-        chat_list = []
-        for chat in chats:
-            chat['_id'] = str(chat['_id'])
-            chat_list.append(chat)
-        return chat_list
+        return chats
 
 class MessageRepo:
 
@@ -51,4 +48,4 @@ class MessageRepo:
         return messages
 
     def add_message(self, chat_id: str, message: dict):
-        return self.db.insert_one({ 'chat_id': chat_id, 'message': message, 'time_of_message': datetime.datetime.now() })
+        return self.db.insert_one({ 'chat_id': chat_id, 'input': message.get('input'), 'output': message.get('output'), 'time_of_message': datetime.datetime.now() })

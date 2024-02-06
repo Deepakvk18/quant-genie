@@ -1,8 +1,11 @@
-from pydantic import BaseModel, Field
-from bson import ObjectId
+from pydantic import BaseModel, Field, BeforeValidator
+from typing import Optional, Annotated
+
+PyObjectId = Annotated[str, BeforeValidator(str)]
+
 
 class UserModel(BaseModel):
-    id: str = Field(alias='_id')
+    id: Optional[PyObjectId] = Field(alias='_id', default=None)
     email: str
     img: str = None
     openai_api_key: str = None

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Avatar from "react-avatar";
 import { FileEdit } from "lucide-react";
 import { useEffect, useState } from "react";
-import AccountForm from "./AccountForm";
+import HistorySkeleton from "./HistorySkeleton";
 import { useRecoilValue } from 'recoil'
 import { userAtom } from '@/store';
 import { useQuery } from '@tanstack/react-query'
@@ -24,13 +24,14 @@ const SidebarSection = ({ session, setAccount }) => {
   const [items, setItems] = useState([])
   const axios = useAxios()
 
-  const { data: chats } = useQuery({
+  const { data: chats, isLoading } = useQuery({
     queryKey: [`chat-history-${user?._id}`],
     queryFn: async ()=>{
       const res = await axios.get('/chats')
       return res?.data
     },
-    staleTime: 600
+    staleTime: 60,
+    refetchInterval: 60
   })
 
   useEffect(()=>{
@@ -63,14 +64,16 @@ const SidebarSection = ({ session, setAccount }) => {
         Chat History
     </h2>
     <ol className="relative overflow-y-auto overflow-x-hidden">
-      {items?.map((item, index) => (
-        <Link 
-          href={`/c/${item._id}`}
-          className={`flex relative hover:bg-gray-400/20 rounded-md ${session === item._id ? 'bg-gray-400/20' : ''} px-2 my-1 w-full` } 
-          key={item._id}
-        >
-          <SidebarItem chatObject={item} />
-        </Link>
+      { isLoading ? 
+          <HistorySkeleton /> : 
+          items?.map((item) => (
+            <Link 
+              href={`/c/${item._id}`}
+              className={`flex relative hover:bg-gray-400/20 rounded-md ${session === item._id ? 'bg-gray-400/20' : ''} px-2 my-1 w-full` } 
+              key={item._id}
+            >
+              <SidebarItem chatObject={item} />
+            </Link>
       ))}
     </ol>
     <div 
