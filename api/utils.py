@@ -5,9 +5,8 @@ from dotenv import load_dotenv
 from google.cloud import storage
 from langchain_google_genai import GoogleGenerativeAI
 from langchain.prompts import PromptTemplate
-
-# storage_client = storage.Client(project=os.getenv('GCP_PROJECT_ID'))
-# bucket = storage_client.bucket(os.getenv('GCP_STORAGE_BUCKET'))
+import requests
+import base64
 
 @lru_cache
 def get_settings():
@@ -59,3 +58,23 @@ You are a helpful title giver. Your task is to give titles for the given message
 title_llm = GoogleGenerativeAI(model='gemini-pro', google_api_key=settings.GOOGLE_API_KEY)
 title_prompt = PromptTemplate.from_template(template=TITLE_PROMPT)
 title_chain = title_prompt | title_llm
+
+class ImgurClient:
+
+    def __init__(self):
+        headers = {
+            'Authorization': f'Client-ID {settings.IMGUR_CLIENT_ID}'
+        }
+        self.requests = requests.Session()
+        self.requests.headers = headers
+    
+    def upload_image(self, figure):
+        encoded = base64.b64encode(figure)
+        response = self.requests.post('https://api.imgur.com/3/image', data={'image': encoded})
+        print(response)
+        return response.get('data').get('link')
+
+img_upload_client = ImgurClient()
+
+def upload_image(figure):
+    return img_upload_client.upload_image(figure=figure)

@@ -16,35 +16,34 @@ import useAxios from '@/lib/axios';
 const ChatSection = ({ history, 
                       setHistory, 
                       setAccount, 
-                      chat,
-                      session }) => {
+                      chatHistory,
+                      setChatHistory,
+                      chatId,
+                      setChatId }) => {
 
   const [socket, setSocket] = useState<any>(null) 
   const access = useRecoilValue(accessAtom)
-  const [chatId, setChatId] = useState<string>(session)
   const user = useRecoilValue(userAtom)
 
   const [messages, setMessages] = useState<IMessage[]>([])
-  const [chatHistory, setChatHistory] = useState<string>('')
   const axios = useAxios()
-  const { data: msgs, isLoading, isError } = useQuery({
-    queryKey: [`get-msgs-${session}`],
+  const { data: msgs, isLoading, isError, refetch } = useQuery({
+    queryKey: [`get-msgs-${chatId}`],
     queryFn: async ()=>{
-      const res = await axios.get(`/messages/${session}`)
+      const res = await axios.get(`/messages/${chatId}`)
       return res?.data
     },
-    staleTime: 60,
-    refetchInterval: 60,
+    enabled: !!chatId
   })
+
+  useEffect(()=>{
+    if (!messages) setMessages([])
+  }, [messages])
 
   const scrollToBottom = ()=>{
     const chatArea = document.getElementById('dummy-div')
     chatArea?.scrollIntoView({ behavior: 'smooth' })
   }
-
-  useEffect(()=>{
-    setChatHistory(chat?.chat_history)
-  }, [chat])
 
   useEffect(()=>{
  
@@ -121,15 +120,15 @@ const ChatSection = ({ history,
     setLoading(true)
     const newMessage = { input: text.trim() };
     await socket.emit('message', { llmInput: { input: text, chat_history: chatHistory }, chatId, userId: user?._id})
-    await setMessages(prevMessages=>[ ...prevMessages, newMessage ])
+    setMessages(prevMessages=>[ ...prevMessages, newMessage ])
     scrollToBottom()
   };
 
   useEffect(()=>{
     if (!isError && !isLoading)
-      setMessages(msgs?.messages)    
+      setMessages(msgs?.messages)
+    else setMessages([])
   }, [msgs, isLoading, isError])
-  
 
   return (
     <div id='chat-area' className={`relative h-[85%] w-full m-auto pb-28 pt-14 overflow-y-auto flex flex-col items-center chat-scrollbar ${history && 'invisible sm:visible'}`}>
@@ -143,7 +142,7 @@ const ChatSection = ({ history,
               <div className='flex h-full w-full justify-center items-center'>
                 <ChatSkeleton />
               </div> :
-              messages?.length === 0 || !chat ?
+              messages?.length === 0 || !messages ?
                 <Intro 
                   setAccount={setAccount}
                 />

@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     ACCESS_EXPIRY: int
     REFRESH_EXPIRY: int
 
-    GCP_BUCKET_ID: str
-    GCP_PROJECT_ID: str
+    IMGUR_CLIENT_ID:str
+    IMGUR_CLIENT_PASSWORD: str
 
     REDIS_HOST: str
     REDIS_PORT: int

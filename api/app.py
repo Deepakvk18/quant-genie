@@ -47,10 +47,12 @@ async def connect(sid, environ, auth):
 async def message(sid: str, message: UserMessage):
     message = loads(json.dumps(message))
     chat_id = message.get('chatId')
-    print(message)
+    first = not chat_id
+    # print(message)
     if not chat_id:
         title = title_chain.invoke({'message': message.get('llmInput').get('input')})
         chat_id = chat_repo.new_chat({ 'user_id': message.get('userId'), 'title': title })
+        
     try:
         # agent_response = await agent_executor.acall(message.get('llmInput')) 
         agent_response = {
@@ -70,7 +72,18 @@ async def message(sid: str, message: UserMessage):
                 'chatId': chat_id, 
                 'userId': message.get('userId')
             }
+        if first:
+            add_to_chat(
+            user_id=message.get('userId'), 
+            message={ 
+                'input': message.get('llmInput').get('input'), 
+                'output': response.get('output') 
+                } , 
+            chat_id=chat_id, 
+            chat_history=response.get('chat_history'))
+
         await sio.emit('message', dumps(response), to=sid)
+        
     except Exception as e:
         response = { 
             'output': { 
@@ -84,9 +97,8 @@ async def message(sid: str, message: UserMessage):
             }
         await sio.emit('message', dumps(response), to=sid)
     
-        
-    
-    task_queue.enqueue(add_to_chat,
+    if not first: 
+        task_queue.enqueue(add_to_chat,
             user_id=message.get('userId'), 
             message={ 
                 'input': message.get('llmInput').get('input'), 

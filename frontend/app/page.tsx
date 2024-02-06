@@ -5,10 +5,15 @@ import { TypeAnimation } from 'react-type-animation';
 import HomeScreen from '@/components/HomeScreen';
 import SignInForm from '@/components/SignInForm';
 import SignUpForm from '@/components/SignUpForm';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
 
   const [screen, setScreen] = useState('/')
+  const refresh = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null 
+  const router = useRouter()
+
+  if (refresh) router.push('/c')
 
   return (
     <div className="flex max-h-screen w-screen flex-col sm:supports-[min-height:100dvh]:min-h-[100dvh] md:grid md:grid-cols-2 lg:grid-cols-[60%_40%]">

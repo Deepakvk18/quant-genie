@@ -11,8 +11,8 @@ const Intro = ({ setAccount }) => {
 
   return (
     <div className='flex flex-col gap-x-8 flex-wrap w-[80%] lg:w-[50%] bg-slate-600 rounded-xl p-4 text-sm'>
-        <div className='flex lg:flex-row gap-4'>
-            <div className='flex flex-row gap-4 items-center w-1/2'>
+        <div className='flex flex-col lg:flex-row items-start gap-4 pb-4'>
+            <div className='flex flex-row gap-4 items-center lg:w-1/2'>
                 <Avatar 
                     src={'/QuantGenie.png'}
                     alt={`genie-avatar`}
@@ -24,7 +24,7 @@ const Intro = ({ setAccount }) => {
                 </h2>
             </div>
             <div 
-                className='flex flex-row gap-2 w-1/2 py-2 justify-end items-center hover:bg-black rounded-md cursor-pointer'
+                className='flex flex-row gap-2 w-full lg:w-1/2 py-2 justify-end items-center hover:bg-black rounded-md cursor-pointer float-right'
                 onClick={()=>setAccount(true)}
             >
                 <div className='flex flex-col gap-1 items-end text-center'>
