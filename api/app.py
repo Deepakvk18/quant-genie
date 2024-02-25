@@ -13,6 +13,7 @@ from schema.chat import UserMessage
 from jobs.chat import add_to_chat
 from rq import Queue
 import redis
+from langchain.callbacks import get_openai_callback
 
 app = FastAPI()
 sio = SocketManager(app, cors_allowed_origins=[])
@@ -45,25 +46,23 @@ async def connect(sid, environ, auth):
 
 @sio.on('message')
 async def message(sid: str, message: UserMessage):
+    print(message)
     message = loads(json.dumps(message))
     chat_id = message.get('chatId')
     first = not chat_id
-    # print(message)
-    if not chat_id:
+
+    if first:
         title = title_chain.invoke({'message': message.get('llmInput').get('input')})
         chat_id = chat_repo.new_chat({ 'user_id': message.get('userId'), 'title': title })
         
     try:
-        # agent_response = await agent_executor.acall(message.get('llmInput')) 
-        agent_response = {
-            'output': "Nah, I'd win",
-            'chat_history': "Let's go you bozos"
-        }  
+        agent_response = await agent_executor.acall(message.get('llmInput')) 
         summ_message = f"""User: {message.get('llmInput').get('input')} \n QuantGenie: {agent_response.get('output')}"""
         summarizer = summarizer_chain.invoke({ 
                 'history': message.get('llmInput').get('chat_history'), 
                 'message': summ_message 
                 })
+
         response = { 
             'output': {
                 'text': agent_response.get('output')
@@ -72,15 +71,6 @@ async def message(sid: str, message: UserMessage):
                 'chatId': chat_id, 
                 'userId': message.get('userId')
             }
-        if first:
-            add_to_chat(
-            user_id=message.get('userId'), 
-            message={ 
-                'input': message.get('llmInput').get('input'), 
-                'output': response.get('output') 
-                } , 
-            chat_id=chat_id, 
-            chat_history=response.get('chat_history'))
 
         await sio.emit('message', dumps(response), to=sid)
         
@@ -99,13 +89,21 @@ async def message(sid: str, message: UserMessage):
     
     if not first: 
         task_queue.enqueue(add_to_chat,
-            user_id=message.get('userId'), 
             message={ 
                 'input': message.get('llmInput').get('input'), 
                 'output': response.get('output') 
                 } , 
             chat_id=chat_id, 
             chat_history=response.get('chat_history'))
+    else:
+        add_to_chat(
+        message={ 
+            'input': message.get('llmInput').get('input'), 
+            'output': response.get('output') 
+            } , 
+        chat_id=chat_id, 
+        chat_history=response.get('chat_history'))
+
     return
 
 @sio.on('disconnect')

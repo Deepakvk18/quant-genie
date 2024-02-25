@@ -20,14 +20,6 @@ async def get_user(new_user:UserCreate, user: UserRepo = Depends(), hasher: Pass
     created_user = user.create_user(new_user)
     return { 'message': 'User created successfully', 'user_id': str(created_user) }
 
-
-
-# @user_router.patch('/patch-api-keys/{user_id}', response_model=UserModel)
-# async def patch_api_keys(user_id: str, partial_user: UserPatch, credentials: JwtAuthorizationCredentials = Security(refresh_security), user: UserRepo = Depends()):
-#     updated_user = user.patch_user(partial_user, user_id)
-#     updated_user['_id'] = str(updated_user['_id'])
-#     return updated_user
-
 @user_router.post('/login', response_model=LoginResponse)
 async def login(login_user:UserCreate, response: Response, user: UserRepo = Depends(), hasher: PasswordHasher = Depends()):
     attempted_user = user.get_user_by_email(login_user.email)

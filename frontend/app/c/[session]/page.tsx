@@ -51,6 +51,7 @@ export default function Page({ params }: IChatParams) {
       router.push('/')
       return
     }
+    
     setChat(chatSession)
     setChatHistory(chatSession?.chat_history)
   }, [chatSession])
