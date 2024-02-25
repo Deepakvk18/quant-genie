@@ -1,7 +1,6 @@
 from pymongo import MongoClient
 from utils import get_settings
-from schema.chat import CreateChat
-from models.chat import Message
+from bson.objectid import ObjectId
 from bson import ObjectId
 from exceptions import QuantGenieException
 import datetime
@@ -27,7 +26,7 @@ class ChatRepo:
         return chat
     
     def update_history_time(self, chat_id: str, history:str):
-        return self.db.find_one_and_update({ '_id': chat_id }, { '$set': {'chat_history': history, 'last_accessed_date': datetime.datetime.now() } })
+        return self.db.update_one({ '_id': ObjectId(chat_id) }, { '$set': {'chat_history': history, 'last_accessed_date': datetime.datetime.now() } })
     
     def get_chats(self, user_id: str):
         chats = self.db.find({ 'user_id': user_id }).sort('last_accessed_date', pymongo.DESCENDING)

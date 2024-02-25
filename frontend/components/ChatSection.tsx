@@ -117,9 +117,12 @@ const ChatSection = ({ history,
   const [message, setMessage] = useState('')
 
   const handleSendMessage = async (text: string) => {
+    console.log('message', { llmInput: { input: text, chat_history: chatHistory }, chatId, userId: user?._id});
     setLoading(true)
     const newMessage = { input: text.trim() };
-    await socket.emit('message', { llmInput: { input: text, chat_history: chatHistory }, chatId, userId: user?._id})
+    await socket.emit('message', { llmInput: { input: text, chat_history: chatHistory ? chatHistory : '' }, chatId, userId: user?._id})
+    console.log('message', { llmInput: { input: text, chat_history: chatHistory }, chatId, userId: user?._id});
+    
     setMessages(prevMessages=>[ ...prevMessages, newMessage ])
     scrollToBottom()
   };

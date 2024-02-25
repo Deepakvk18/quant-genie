@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     REFRESH_EXPIRY: int
 
     IMGUR_CLIENT_ID:str
-    IMGUR_CLIENT_PASSWORD: str
+    IMGUR_CLIENT_SECRET: str
 
     REDIS_HOST: str
     REDIS_PORT: int
